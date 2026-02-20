@@ -9,8 +9,7 @@ app = Flask(__name__)
 app.secret_key = 'ipm_smkm1_tgr_luxury_2026_dafitrah_ultimate'
 
 # --- CONFIGURATION DATABASE ---
-basedir = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'ipm_data.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/ipm_data.db' 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -1340,3 +1339,4 @@ def piagam():
 if __name__ == '__main__':
 
     app.run(debug=True)
+
