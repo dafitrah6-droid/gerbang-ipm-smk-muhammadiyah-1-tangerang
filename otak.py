@@ -391,8 +391,15 @@ def absen():
         already = Absensi.query.filter(Absensi.user_id == session['user_id'], db.func.date(Absensi.waktu_hadir) == today).first()
         if already: flash("Sudah absen hari ini!")
         else:
-            db.session.add(Absensi(user_id=session['user_id'], nama_kader=session['user_name']))
-            db.session.commit()
+    db.session.add(
+        Absensi(
+            user_id=session['user_id'],
+            nama_kader=session['user_name'],
+            waktu_hadir=get_now_wib()
+        )
+    )
+    db.session.commit()
+    flash("Absensi Berhasil!")
             flash("Absensi Berhasil!")
         return redirect('/absen')
     logs = Absensi.query.order_by(Absensi.waktu_hadir.desc()).limit(15).all()
@@ -811,3 +818,4 @@ def piagam():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
