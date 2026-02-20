@@ -415,15 +415,28 @@ def absen():
 def kas():
     if 'user_id' not in session: return redirect('/login')
     if request.method == 'POST':
-        db.session.add(Kas(tipe=request.form.get('t'), jumlah=int(request.form.get('j')), keterangan=request.form.get('k')))
-        db.session.commit()
-        flash("Data Kas Berhasil Disimpan!")
+        try:
+            nominal = int(request.form.get('j') or 0)
+            db.session.add(Kas(tipe=request.form.get('t'), jumlah=nominal, keterangan=request.form.get('k')))
+            db.session.commit()
+            flash("Data Kas Berhasil Disimpan!")
+        except Exception as e:
+            flash("Gagal menyimpan data!")
         return redirect('/kas')
+    
     data = Kas.query.order_by(Kas.tanggal.desc()).all()
-    saldo = sum(d.jumlah if d.tipe == 'masuk' else -d.jumlah for d in data)
+    
+    # PERBAIKAN: Logika hitung saldo yang lebih aman
+    pemasukan = sum(d.jumlah for d in data if d.tipe == 'masuk' and d.jumlah is not None)
+    pengeluaran = sum(d.jumlah for d in data if d.tipe == 'keluar' and d.jumlah is not None)
+    saldo = pemasukan - pengeluaran
+    
     return render_template_string(UI_CORE_HEADER + """
     <div class="container mt-4">
-        <div class="glass-card text-center mb-4" data-aos="zoom-in-down"><span class="text-secondary small">SALDO KAS RANTING</span><h1 class="text-gold fw-bold">Rp {{ "{:,}".format(saldo) }}</h1></div>
+        <div class="glass-card text-center mb-4" data-aos="zoom-in-down">
+            <span class="text-secondary small">SALDO KAS RANTING</span>
+            <h1 class="text-gold fw-bold">Rp {{ "{:,.0f}".format(saldo) if saldo else '0' }}</h1>
+        </div>
         <div class="row">
             <div class="col-md-4 mb-3" data-aos="fade-up-right"><div class="glass-card">
                 <h6 class="text-gold mb-3"><i class="bi bi-plus-slash-minus"></i> Catat Transaksi</h6>
@@ -436,11 +449,11 @@ def kas():
             </div></div>
             <div class="col-md-8" data-aos="fade-up-left"><div class="glass-card"><table class="table table-dark small">
                 <thead><tr class="text-gold"><th>Ket</th><th>Jumlah</th></tr></thead>
-                <tbody>{% for d in data %}<tr><td>{{ d.keterangan }}</td><td class="{{ 'text-success' if d.tipe == 'masuk' else 'text-danger' }}">{{ '+' if d.tipe == 'masuk' else '-' }} {{ "{:,}".format(d.jumlah) }}</td></tr>{% endfor %}</tbody>
+                <tbody>{% for d in data %}<tr><td>{{ d.keterangan }}</td><td class="{{ 'text-success' if d.tipe == 'masuk' else 'text-danger' }}">{{ '+' if d.tipe == 'masuk' else '-' }} {{ "{:,.0f}".format(d.jumlah) }}</td></tr>{% endfor %}</tbody>
             </table></div></div>
         </div>
     </div>""" + UI_CORE_FOOTER, data=data, saldo=saldo)
-
+    
 @app.route('/agenda', methods=['GET', 'POST'])
 def agenda():
     if 'user_id' not in session: return redirect('/login')
@@ -800,3 +813,4 @@ def piagam():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
