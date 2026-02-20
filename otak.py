@@ -277,8 +277,7 @@ def register():
     return render_template_string(UI_CORE_HEADER + """ 
     <!-- FORM TETAP PUNYA KAMU -->
     """ + UI_CORE_FOOTER)
-            
-    return render_template_string(UI_CORE_HEADER + """
+    
     <div class="container mt-4 mb-5" data-aos="zoom-in">
         <div class="glass-card mx-auto" style="max-width:550px; border: 1px solid var(--gold);">
             <h3 class="text-gold fw-bold text-center">PENDAFTARAN KADER</h3>
@@ -446,9 +445,51 @@ def absen():
         Absensi.waktu_hadir.desc()
     ).limit(15).all()
 
-   return render_template_string(UI_CORE_HEADER + """
-   ...
-""" + UI_CORE_FOOTER, logs=logs)
+    return render_template_string(UI_CORE_HEADER + """
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="glass-card text-center">
+                    <h4 class="text-gold fw-bold">PRESENSI</h4>
+                    <form method="POST">
+                        <button type="submit" class="btn-gold py-4 fs-3">
+                            HADIR
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="glass-card">
+                    <h5 class="text-gold">Log Kehadiran Baru</h5>
+                    <table class="table table-dark small">
+                        <thead>
+                            <tr>
+                                <th>Kader</th>
+                                <th>Waktu</th>
+                                {% if session.role == 'admin' %}<th>Aksi</th>{% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for l in logs %}
+                            <tr>
+                                <td>{{ l.nama_kader }}</td>
+                                <td>{{ l.waktu_hadir.strftime('%H:%M - %d/%m') }}</td>
+                                {% if session.role == 'admin' %}
+                                <td>
+                                    <a href="/hapus/absen/{{ l.id }}" class="text-danger">
+                                        Hapus
+                                    </a>
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    """ + UI_CORE_FOOTER, logs=logs)
  
     <div class="container mt-5"><div class="row">
         <div class="col-md-4 mb-4" data-aos="fade-right"><div class="glass-card text-center">
@@ -864,6 +905,7 @@ def piagam():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
 
