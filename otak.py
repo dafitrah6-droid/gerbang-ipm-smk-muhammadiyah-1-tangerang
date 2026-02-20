@@ -228,51 +228,24 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = (request.form.get('u') or "").strip().lower()
-        password = request.form.get('p') or ""
-        full_name = (request.form.get('fn') or "").strip()
-        gmail = (request.form.get('gm') or "").strip()
-        nis = (request.form.get('nis') or "").strip()
-        kelas = (request.form.get('kls') or "").strip()
-        whatsapp = (request.form.get('wa') or "").strip()
-
-        if not username or not password or not full_name:
-            flash("Data wajib belum lengkap!")
-            return redirect('/register')
-
-        if len(password) < 6:
-            flash("Password minimal 6 karakter!")
-            return redirect('/register')
-
+        username = request.form.get('u').lower().strip()
+        password = request.form.get('p')
+        full_name = request.form.get('fn')
+        
         if User.query.filter_by(username=username).first():
             flash("Username sudah digunakan!")
-            return redirect('/register')
-
-        try:
+        else:
             hashed_p = generate_password_hash(password)
-
             new_user = User(
-                username=username,
-                password=hashed_p,
-                full_name=full_name,
-                gmail=gmail,
-                nis=nis,
-                kelas=kelas,
-                whatsapp=whatsapp,
-                created_at=get_now_wib()
+                username=username, password=hashed_p, full_name=full_name,
+                gmail=request.form.get('gm'), nis=request.form.get('nis'),
+                kelas=request.form.get('kls'), whatsapp=request.form.get('wa')
             )
-
             db.session.add(new_user)
             db.session.commit()
-
             flash("Registrasi Berhasil! Silakan Login.")
             return redirect('/login')
-
-        except Exception:
-            db.session.rollback()
-            flash("Terjadi kesalahan saat registrasi!")
-            return redirect('/register')
-
+            
     return render_template_string(UI_CORE_HEADER + """
     <div class="container mt-4 mb-5" data-aos="zoom-in">
         <div class="glass-card mx-auto" style="max-width:550px; border: 1px solid var(--gold);">
@@ -280,36 +253,19 @@ def register():
             <p class="small text-secondary text-center">Isi data dengan benar untuk pembuatan KTA & Piagam otomatis.</p>
             <form method="POST">
                 <label class="small text-gold">Nama Lengkap (Sesuai Ijazah)</label>
-                <input name="fn" class="form-control mb-3" required>
-
+                <input name="fn" class="form-control mb-3" placeholder="Contoh: Muhammad Dafitrah" required>
                 <div class="row mb-3">
-                    <div class="col-6">
-                        <label class="small text-gold">Username</label>
-                        <input name="u" class="form-control" required>
-                    </div>
-                    <div class="col-6">
-                        <label class="small text-gold">Password</label>
-                        <input type="password" name="p" class="form-control" required>
-                    </div>
+                    <div class="col-6"><label class="small text-gold">Username</label><input name="u" class="form-control" placeholder="kecil & tanpa spasi" required></div>
+                    <div class="col-6"><label class="small text-gold">Password</label><input type="password" name="p" class="form-control" placeholder="Min 6 Karakter" required></div>
                 </div>
-
                 <label class="small text-gold">Email Aktif</label>
-                <input name="gm" type="email" class="form-control mb-3" required>
-
+                <input name="gm" type="email" class="form-control mb-3" placeholder="dafitrah@gmail.com" required>
                 <div class="row mb-3">
-                    <div class="col-6">
-                        <label class="small text-gold">NIS</label>
-                        <input name="nis" class="form-control" required>
-                    </div>
-                    <div class="col-6">
-                        <label class="small text-gold">Kelas</label>
-                        <input name="kls" class="form-control" required>
-                    </div>
+                    <div class="col-6"><label class="small text-gold">NIS</label><input name="nis" class="form-control" required></div>
+                    <div class="col-6"><label class="small text-gold">Kelas</label><input name="kls" class="form-control" placeholder="Contoh: XII RPL 1" required></div>
                 </div>
-
                 <label class="small text-gold">No. WhatsApp</label>
-                <input name="wa" class="form-control mb-4" required>
-
+                <input name="wa" class="form-control mb-4" placeholder="08xxxx" required>
                 <button type="submit" class="btn-gold">DAFTAR SEKARANG</button>
             </form>
         </div>
@@ -429,81 +385,18 @@ def struktur():
 
 @app.route('/absen', methods=['GET', 'POST'])
 def absen():
-    if 'user_id' not in session:
-        return redirect('/login')
-
+    if 'user_id' not in session: return redirect('/login')
     if request.method == 'POST':
-        now = get_now_wib()
-        today = now.date()
-
-        already = Absensi.query.filter(
-            Absensi.user_id == session['user_id'],
-            db.func.date(Absensi.waktu_hadir) == today
-        ).first()
-
-        if already:
-            flash("Sudah absen hari ini!")
+        today = datetime.now().date()
+        already = Absensi.query.filter(Absensi.user_id == session['user_id'], db.func.date(Absensi.waktu_hadir) == today).first()
+        if already: flash("Sudah absen hari ini!")
         else:
-            db.session.add(Absensi(
-                user_id=session['user_id'],
-                nama_kader=session.get('user_name'),
-                waktu_hadir=now
-            ))
+            db.session.add(Absensi(user_id=session['user_id'], nama_kader=session['user_name']))
             db.session.commit()
             flash("Absensi Berhasil!")
-
         return redirect('/absen')
-
-    logs = Absensi.query.order_by(
-        Absensi.waktu_hadir.desc()
-    ).limit(15).all()
-
+    logs = Absensi.query.order_by(Absensi.waktu_hadir.desc()).limit(15).all()
     return render_template_string(UI_CORE_HEADER + """
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col-md-4 mb-4">
-                <div class="glass-card text-center">
-                    <h4 class="text-gold fw-bold">PRESENSI</h4>
-                    <form method="POST">
-                        <button type="submit" class="btn-gold py-4 fs-3">
-                            HADIR
-                        </button>
-                    </form>
-                </div>
-            </div>
-            <div class="col-md-8">
-                <div class="glass-card">
-                    <h5 class="text-gold">Log Kehadiran Baru</h5>
-                    <table class="table table-dark small">
-                        <thead>
-                            <tr>
-                                <th>Kader</th>
-                                <th>Waktu</th>
-                                {% if session.role == 'admin' %}<th>Aksi</th>{% endif %}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for l in logs %}
-                            <tr>
-                                <td>{{ l.nama_kader }}</td>
-                                <td>{{ l.waktu_hadir.strftime('%H:%M - %d/%m') }}</td>
-                                {% if session.role == 'admin' %}
-                                <td>
-                                    <a href="/hapus/absen/{{ l.id }}" class="text-danger">
-                                        Hapus
-                                    </a>
-                                </td>
-                                {% endif %}
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-    """ + UI_CORE_FOOTER, logs=logs)
- 
     <div class="container mt-5"><div class="row">
         <div class="col-md-4 mb-4" data-aos="fade-right"><div class="glass-card text-center">
             <h4 class="text-gold fw-bold">PRESENSI</h4>
@@ -918,9 +811,3 @@ def piagam():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
-
-
-
-
