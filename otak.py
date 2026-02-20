@@ -432,12 +432,11 @@ def absen():
         if already:
             flash("Sudah absen hari ini!")
         else:
-            new_absen = Absensi(
+            db.session.add(Absensi(
                 user_id=session['user_id'],
-                nama_kader=session['user_name'],
+                nama_kader=session.get('user_name'),
                 waktu_hadir=now
-            )
-            db.session.add(new_absen)
+            ))
             db.session.commit()
             flash("Absensi Berhasil!")
 
@@ -909,5 +908,6 @@ def piagam():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
