@@ -228,23 +228,55 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form.get('u').lower().strip()
-        password = request.form.get('p')
-        full_name = request.form.get('fn')
-        
+        username = (request.form.get('u') or "").strip().lower()
+        password = request.form.get('p') or ""
+        full_name = (request.form.get('fn') or "").strip()
+        gmail = (request.form.get('gm') or "").strip()
+        nis = (request.form.get('nis') or "").strip()
+        kelas = (request.form.get('kls') or "").strip()
+        whatsapp = (request.form.get('wa') or "").strip()
+
+        # Validasi dasar
+        if not username or not password or not full_name:
+            flash("Data wajib belum lengkap!")
+            return redirect('/register')
+
+        if len(password) < 6:
+            flash("Password minimal 6 karakter!")
+            return redirect('/register')
+
         if User.query.filter_by(username=username).first():
             flash("Username sudah digunakan!")
-        else:
+            return redirect('/register')
+
+        try:
             hashed_p = generate_password_hash(password)
+
             new_user = User(
-                username=username, password=hashed_p, full_name=full_name,
-                gmail=request.form.get('gm'), nis=request.form.get('nis'),
-                kelas=request.form.get('kls'), whatsapp=request.form.get('wa')
+                username=username,
+                password=hashed_p,
+                full_name=full_name,
+                gmail=gmail,
+                nis=nis,
+                kelas=kelas,
+                whatsapp=whatsapp,
+                created_at=get_now_wib()
             )
+
             db.session.add(new_user)
             db.session.commit()
+
             flash("Registrasi Berhasil! Silakan Login.")
             return redirect('/login')
+
+        except Exception as e:
+            db.session.rollback()
+            flash("Terjadi kesalahan saat registrasi!")
+            return redirect('/register')
+
+    return render_template_string(UI_CORE_HEADER + """ 
+    <!-- FORM TETAP PUNYA KAMU -->
+    """ + UI_CORE_FOOTER)
             
     return render_template_string(UI_CORE_HEADER + """
     <div class="container mt-4 mb-5" data-aos="zoom-in">
@@ -811,3 +843,4 @@ def piagam():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
