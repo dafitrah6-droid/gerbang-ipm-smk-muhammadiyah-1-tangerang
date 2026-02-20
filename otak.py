@@ -3,9 +3,9 @@ from flask import Flask, render_template_string, request, redirect, url_for, ses
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
-import pytz
-from datetime import datetime
+import pytz # <-- TAMBAHKAN INI
 
+# --- SETTING TIMEZONE WIB ---
 WIB = pytz.timezone('Asia/Jakarta')
 
 def get_now_wib():
@@ -30,7 +30,7 @@ class User(db.Model):
     kelas = db.Column(db.String(50))
     whatsapp = db.Column(db.String(20))
     role = db.Column(db.String(20), default='member')
-    created_at = db.Column(db.DateTime, default=get_now_wib)
+    created_at = db.Column(db.DateTime, default=datetime.now)
     absensi = db.relationship('Absensi', backref='user', lazy=True)
 
 class Kas(db.Model):
@@ -387,19 +387,12 @@ def struktur():
 def absen():
     if 'user_id' not in session: return redirect('/login')
     if request.method == 'POST':
-        today = get_now_wib().date()
+        today = datetime.now().date()
         already = Absensi.query.filter(Absensi.user_id == session['user_id'], db.func.date(Absensi.waktu_hadir) == today).first()
         if already: flash("Sudah absen hari ini!")
         else:
-    db.session.add(
-        Absensi(
-            user_id=session['user_id'],
-            nama_kader=session['user_name'],
-            waktu_hadir=get_now_wib()
-        )
-    )
-    db.session.commit()
-    flash("Absensi Berhasil!")
+            db.session.add(Absensi(user_id=session['user_id'], nama_kader=session['user_name']))
+            db.session.commit()
             flash("Absensi Berhasil!")
         return redirect('/absen')
     logs = Absensi.query.order_by(Absensi.waktu_hadir.desc()).limit(15).all()
@@ -818,4 +811,3 @@ def piagam():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
