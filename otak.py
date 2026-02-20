@@ -28,9 +28,8 @@ limiter = Limiter(
 )
 
 # --- CONFIGURATION DATABASE ---
-basedir = os.path.abspath(os.path.dirname(__file__))
-# Menggunakan path absolut agar database tetap stabil
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'ipm_data.db')
+# Pakai /tmp/ agar Vercel tidak Error 500 saat mencoba menulis data
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/ipm_data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -409,3 +408,4 @@ def ratelimit_handler(e): return render_template_string(UI_CORE_HEADER + """<div
 
 if __name__ == '__main__':
     app.run(debug=True)
+
