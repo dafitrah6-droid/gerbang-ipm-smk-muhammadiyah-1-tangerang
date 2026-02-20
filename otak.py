@@ -236,7 +236,6 @@ def register():
         kelas = (request.form.get('kls') or "").strip()
         whatsapp = (request.form.get('wa') or "").strip()
 
-        # Validasi dasar
         if not username or not password or not full_name:
             flash("Data wajib belum lengkap!")
             return redirect('/register')
@@ -269,34 +268,48 @@ def register():
             flash("Registrasi Berhasil! Silakan Login.")
             return redirect('/login')
 
-        except Exception as e:
+        except Exception:
             db.session.rollback()
             flash("Terjadi kesalahan saat registrasi!")
             return redirect('/register')
 
-    return render_template_string(UI_CORE_HEADER + """ 
-    <!-- FORM TETAP PUNYA KAMU -->
-    """ + UI_CORE_FOOTER)
-    
+    return render_template_string(UI_CORE_HEADER + """
     <div class="container mt-4 mb-5" data-aos="zoom-in">
         <div class="glass-card mx-auto" style="max-width:550px; border: 1px solid var(--gold);">
             <h3 class="text-gold fw-bold text-center">PENDAFTARAN KADER</h3>
             <p class="small text-secondary text-center">Isi data dengan benar untuk pembuatan KTA & Piagam otomatis.</p>
             <form method="POST">
                 <label class="small text-gold">Nama Lengkap (Sesuai Ijazah)</label>
-                <input name="fn" class="form-control mb-3" placeholder="Contoh: Muhammad Dafitrah" required>
+                <input name="fn" class="form-control mb-3" required>
+
                 <div class="row mb-3">
-                    <div class="col-6"><label class="small text-gold">Username</label><input name="u" class="form-control" placeholder="kecil & tanpa spasi" required></div>
-                    <div class="col-6"><label class="small text-gold">Password</label><input type="password" name="p" class="form-control" placeholder="Min 6 Karakter" required></div>
+                    <div class="col-6">
+                        <label class="small text-gold">Username</label>
+                        <input name="u" class="form-control" required>
+                    </div>
+                    <div class="col-6">
+                        <label class="small text-gold">Password</label>
+                        <input type="password" name="p" class="form-control" required>
+                    </div>
                 </div>
+
                 <label class="small text-gold">Email Aktif</label>
-                <input name="gm" type="email" class="form-control mb-3" placeholder="dafitrah@gmail.com" required>
+                <input name="gm" type="email" class="form-control mb-3" required>
+
                 <div class="row mb-3">
-                    <div class="col-6"><label class="small text-gold">NIS</label><input name="nis" class="form-control" required></div>
-                    <div class="col-6"><label class="small text-gold">Kelas</label><input name="kls" class="form-control" placeholder="Contoh: XII RPL 1" required></div>
+                    <div class="col-6">
+                        <label class="small text-gold">NIS</label>
+                        <input name="nis" class="form-control" required>
+                    </div>
+                    <div class="col-6">
+                        <label class="small text-gold">Kelas</label>
+                        <input name="kls" class="form-control" required>
+                    </div>
                 </div>
+
                 <label class="small text-gold">No. WhatsApp</label>
-                <input name="wa" class="form-control mb-4" placeholder="08xxxx" required>
+                <input name="wa" class="form-control mb-4" required>
+
                 <button type="submit" class="btn-gold">DAFTAR SEKARANG</button>
             </form>
         </div>
@@ -905,6 +918,7 @@ def piagam():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
 
