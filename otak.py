@@ -3,7 +3,13 @@ from flask import Flask, render_template_string, request, redirect, url_for, ses
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+import pytz # <--- TAMBAHKAN INI
 
+# --- SETTING TIMEZONE WIB ---
+WIB = pytz.timezone('Asia/Jakarta')
+
+def get_now_wib():
+    return datetime.now(WIB)
 app = Flask(__name__)
 app.secret_key = 'ipm_smkm1_tgr_luxury_2026_dafitrah_ultimate'
 
