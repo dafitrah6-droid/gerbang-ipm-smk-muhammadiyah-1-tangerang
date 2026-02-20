@@ -90,6 +90,7 @@ UI_CORE_HEADER = """
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="google-site-verification" content="YcLkbqpi--metg2W9OqS5B6SoF8jsqp3L_HLs1CIvss" />
     <title>IPM PORTAL | SMKM 1 TGR</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -811,3 +812,4 @@ def piagam():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
