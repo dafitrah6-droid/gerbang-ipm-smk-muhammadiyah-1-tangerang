@@ -14,7 +14,7 @@ app = Flask(__name__)
 app.secret_key = 'ipm_smkm1_tgr_luxury_2026_dafitrah_ultimate'
 
 # --- CONFIGURATION DATABASE (Hanya bagian ini yang disesuaikan agar tidak Error 500) ---
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:[YOUR-PASSWORD]@db.agwcwoulwactpmtruevs.supabase.co:5432/postgres'
+postgresql+psycopg2://postgres:[PASSWORD]@db.agwcwoulwactpmtruevs.supabase.co:5432/postgres
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -812,5 +812,6 @@ def piagam():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
 
 
