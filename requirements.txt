@@ -1,4 +1,5 @@
 Flask
 Flask-SQLAlchemy
 pytz
-
+werkzeug
+psycopg2-binary
